@@ -98,6 +98,10 @@ class CommandMapPostProcessingHook
                 $target = $newId;
             }
             foreach ($children as $colPos => $record) {
+                if ($command === 'move' && $record['pid'] === $target) {
+                    // or: isMaxitemsReachedByContainenrId: exclude CE itselfs
+                    continue;
+                }
                 $cmd = [
                     'tt_content' => [
                         $record['uid'] => [
@@ -112,6 +116,8 @@ class CommandMapPostProcessingHook
                         ]
                     ]
                 ];
+                // two more tests,
+                // move container with child and maxitems
                 $localDataHandler = GeneralUtility::makeInstance(DataHandler::class);
                 $localDataHandler->start([], $cmd, $dataHandler->BE_USER);
                 $localDataHandler->process_cmdmap();

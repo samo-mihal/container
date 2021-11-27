@@ -150,6 +150,9 @@ class CommandMapBeforeStartHook
                         isset($cmd['update']['colPos'])
                     ) {
                         $cmd['update'] = $this->dataFromContainerIdColPos($cmd['update']);
+                        if (isset($cmd['update']['tx_container_parent']) && $cmd['update']['tx_container_parent'] > 0 && $cmd['target'] > 0) {
+                            $cmd['target'] = -$cmd['update']['tx_container_parent'];
+                        }
                     }
                 }
             }

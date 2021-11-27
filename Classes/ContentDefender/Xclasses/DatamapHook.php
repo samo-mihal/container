@@ -42,7 +42,7 @@ class DatamapHook extends DatamapDataHandlerHook
      */
     public function processDatamap_beforeStart(DataHandler $dataHandler): void
     {
-        if (is_array($dataHandler->datamap['tt_content'] ?? null)) {
+        if (isset($dataHandler->datamap['tt_content']) && is_array($dataHandler->datamap['tt_content'])) {
             foreach ($dataHandler->datamap['tt_content'] as $id => $values) {
                 if (
                     isset($values['tx_container_parent']) &&

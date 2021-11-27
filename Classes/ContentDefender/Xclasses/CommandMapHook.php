@@ -58,6 +58,7 @@ class CommandMapHook extends CmdmapDataHandlerHook
                             'containerId' => (int)$data['update']['tx_container_parent'],
                             'colPos' => (int)$data['update']['colPos']
                         ];
+
                         if ($this->containerColumnConfigurationService->isMaxitemsReachedByContainenrId((int)$data['update']['tx_container_parent'], (int)$data['update']['colPos'])) {
                             unset($dataHandler->cmdmap['tt_content'][$id]);
                             $dataHandler->log(
