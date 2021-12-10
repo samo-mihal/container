@@ -13,6 +13,8 @@ namespace B13\Container\Hooks\Datahandler;
  */
 
 use B13\Container\Domain\Factory\ContainerFactory;
+use B13\Container\Domain\Factory\Exception;
+use B13\Container\Domain\Service\ContainerService;
 use B13\Container\Tca\Registry;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
@@ -38,19 +40,27 @@ class CommandMapBeforeStartHook
     protected $database;
 
     /**
+     * @var ContainerService
+     */
+    protected $containerService;
+
+    /**
      * UsedRecords constructor.
      * @param ContainerFactory|null $containerFactory
      * @param Registry|null $tcaRegistry
      * @param Database|null $database
+     * @param ContainerService|null $containerService
      */
     public function __construct(
         ContainerFactory $containerFactory = null,
         Registry $tcaRegistry = null,
-        Database $database = null
+        Database $database = null,
+        ContainerService $containerService = null
     ) {
         $this->containerFactory = $containerFactory ?? GeneralUtility::makeInstance(ContainerFactory::class);
         $this->tcaRegistry = $tcaRegistry ?? GeneralUtility::makeInstance(Registry::class);
         $this->database = $database ?? GeneralUtility::makeInstance(Database::class);
+        $this->containerService = $containerService ?? GeneralUtility::makeInstance(ContainerService::class);
     }
     /**
      * @param DataHandler $dataHandler
@@ -60,6 +70,41 @@ class CommandMapBeforeStartHook
         $this->unsetInconsistentLocalizeCommands($dataHandler);
         $dataHandler->cmdmap = $this->rewriteSimpleCommandMap($dataHandler->cmdmap);
         $dataHandler->cmdmap = $this->extractContainerIdFromColPosOnUpdate($dataHandler->cmdmap);
+        // previously page id is used for copy/moving element at top of a container colum
+        // but this leeds to wrong sorting in page context (e.g. List-Module)
+        $dataHandler->cmdmap = $this->rewriteCommandMapTargetForTopAtContainer($dataHandler->cmdmap);
+    }
+
+    protected function rewriteCommandMapTargetForTopAtContainer(array $cmdmap): array
+    {
+        if (!empty($cmdmap['tt_content'])) {
+            foreach ($cmdmap['tt_content'] as $id => &$cmd) {
+                foreach ($cmd as $operation => $value) {
+                    if (in_array($operation, ['copy', 'move'], true) === false) {
+                        continue;
+                    }
+
+                    if (
+                        isset($value['update']) &&
+                        isset($value['update']['tx_container_parent']) &&
+                        $value['update']['tx_container_parent'] > 0 &&
+                        isset($value['update']['colPos']) &&
+                        $value['update']['colPos'] > 0 &&
+                        $value['target'] > 0
+                    ) {
+
+                        try {
+                            $container = $this->containerFactory->buildContainer((int)$value['update']['tx_container_parent']);
+                            $target = $this->containerService->getNewContentElementAtTopTargetInColumn($container, (int)$value['update']['colPos']);
+                            $cmd[$operation]['target'] = $target;
+                        } catch (Exception $e) {
+                            // not a container
+                        }
+                    }
+                }
+            }
+        }
+        return $cmdmap;
     }
 
     protected function rewriteSimpleCommandMap(array $cmdmap): array
@@ -150,9 +195,6 @@ class CommandMapBeforeStartHook
                         isset($cmd['update']['colPos'])
                     ) {
                         $cmd['update'] = $this->dataFromContainerIdColPos($cmd['update']);
-                        if (isset($cmd['update']['tx_container_parent']) && $cmd['update']['tx_container_parent'] > 0 && $cmd['target'] > 0) {
-                            $cmd['target'] = -$cmd['update']['tx_container_parent'];
-                        }
                     }
                 }
             }
