@@ -101,6 +101,12 @@ class DatamapHook extends DatamapDataHandlerHook
                 $this->mapping[$record['uid']]['containerId'],
                 $this->mapping[$record['uid']]['colPos']
             );
+        } elseif ($record['tx_container_parent'] > 0) {
+            $columnConfiguration = $this->containerColumnConfigurationService->override(
+                $columnConfiguration,
+                $record['tx_container_parent'],
+                $record['colPos']
+            );
         }
         return parent::isRecordAllowedByRestriction($columnConfiguration, $record);
     }
