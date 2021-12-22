@@ -72,7 +72,6 @@ class CommandMapBeforeStartHookTest extends UnitTestCase
         ];
         $rewrittenCommandMap = $dataHandlerHook->_call('rewriteCommandMapTargetForTopAtContainer', $cmdmap);
         self::assertSame($expected, $rewrittenCommandMap);
-
     }
 
     /**

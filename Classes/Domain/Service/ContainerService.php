@@ -24,7 +24,6 @@ class ContainerService implements SingletonInterface
      */
     protected $tcaRegistry;
 
-
     public function __construct(Registry $tcaRegistry = null)
     {
         $this->tcaRegistry = $tcaRegistry ?? GeneralUtility::makeInstance(Registry::class);

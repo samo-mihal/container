@@ -92,7 +92,6 @@ class CommandMapBeforeStartHook
                         $value['update']['colPos'] > 0 &&
                         $value['target'] > 0
                     ) {
-
                         try {
                             $container = $this->containerFactory->buildContainer((int)$value['update']['tx_container_parent']);
                             $target = $this->containerService->getNewContentElementAtTopTargetInColumn($container, (int)$value['update']['colPos']);
