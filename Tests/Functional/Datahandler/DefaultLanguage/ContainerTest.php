@@ -77,8 +77,6 @@ class ContainerTest extends DatahandlerTest
         self::assertSame(1, $child['tx_container_parent']);
         self::assertSame(200, $child['colPos']);
         self::assertSame(0, $child['sys_language_uid']);
-        $container = $this->fetchOneRecord('uid', 1);
-        self::assertTrue($child['sorting'] > $container['sorting'], 'moved child is sorted before container');
     }
 
     /**
@@ -108,8 +106,6 @@ class ContainerTest extends DatahandlerTest
         self::assertSame(1, $child['tx_container_parent']);
         self::assertSame(200, $child['colPos']);
         self::assertSame(0, $child['sys_language_uid']);
-        $container = $this->fetchOneRecord('uid', 1);
-        self::assertTrue($child['sorting'] > $container['sorting'], 'moved child is sorted before container');
     }
 
     /**
@@ -138,7 +134,6 @@ class ContainerTest extends DatahandlerTest
         self::assertSame($copiedRecord['uid'], $child['tx_container_parent']);
         self::assertSame(200, $child['colPos']);
         self::assertSame(0, $child['sys_language_uid']);
-        self::assertTrue($child['sorting'] > $copiedRecord['sorting'], 'copied child is sorted before container');
     }
 
     /**
@@ -167,9 +162,6 @@ class ContainerTest extends DatahandlerTest
         self::assertSame(3, $child['pid']);
         self::assertSame($copiedRecord['uid'], $child['tx_container_parent']);
         self::assertSame(200, $child['colPos']);
-        self::assertTrue($child['sorting'] > $copiedRecord['sorting'], 'copied child is sorted before container');
-        $targetElement = $this->fetchOneRecord('uid', 14);
-        self::assertTrue($child['sorting'] > $targetElement['sorting'], 'copied child is sorted before target element');
     }
 
     /**
@@ -199,8 +191,6 @@ class ContainerTest extends DatahandlerTest
         self::assertSame(3, $child['pid']);
         self::assertSame(1, $child['tx_container_parent']);
         self::assertSame(200, $child['colPos']);
-        $container = $this->fetchOneRecord('uid', 1);
-        self::assertTrue($child['sorting'] > $container['sorting'], 'moved child is sorted before container');
     }
 
     /**
@@ -226,7 +216,5 @@ class ContainerTest extends DatahandlerTest
         $child = $this->fetchOneRecord('t3_origuid', 2);
         $secondChild = $this->fetchOneRecord('t3_origuid', 5);
         self::assertTrue($child['sorting'] < $secondChild['sorting']);
-        $container = $this->fetchOneRecord('uid', 1);
-        self::assertTrue($child['sorting'] > $container['sorting'], 'moved child is sorted before container');
     }
 }
