@@ -14,6 +14,8 @@ namespace B13\Container\Hooks\Datahandler;
 
 use B13\Container\Domain\Factory\ContainerFactory;
 use B13\Container\Domain\Factory\Exception;
+use B13\Container\Domain\Service\ContainerService;
+use B13\Container\Tca\Registry;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -31,13 +33,29 @@ class DatamapBeforeStartHook
     protected $database;
 
     /**
+     * @var ContainerService
+     */
+    protected $containerService;
+
+    /**
+     * @var Registry
+     */
+    protected $tcaRegistry;
+
+    /**
      * @param ContainerFactory|null $containerFactory
      * @param Database|null $database
      */
-    public function __construct(ContainerFactory $containerFactory = null, Database $database = null)
-    {
+    public function __construct(
+        ContainerFactory $containerFactory = null,
+        Database $database = null,
+        Registry $tcaRegistry = null,
+        ContainerService $containerService = null
+    ) {
         $this->containerFactory = $containerFactory ?? GeneralUtility::makeInstance(ContainerFactory::class);
         $this->database = $database ?? GeneralUtility::makeInstance(Database::class);
+        $this->tcaRegistry = $tcaRegistry ?? GeneralUtility::makeInstance(Registry::class);
+        $this->containerService = $containerService ?? GeneralUtility::makeInstance(ContainerService::class);
     }
 
     /**
@@ -47,8 +65,39 @@ class DatamapBeforeStartHook
     {
         // ajax move (drag & drop)
         $dataHandler->datamap = $this->extractContainerIdFromColPosInDatamap($dataHandler->datamap);
+        $dataHandler->datamap = $this->afterContainerElementSorting($dataHandler->datamap);
         $dataHandler->datamap = $this->datamapForChildLocalizations($dataHandler->datamap);
         $dataHandler->datamap = $this->datamapForChildrenChangeContainerLanguage($dataHandler->datamap);
+    }
+
+    protected function afterContainerElementSorting(array $datamap): array
+    {
+        //var_dump($datamap);
+        if (isset($datamap['tt_content']) && !empty($datamap['tt_content'])) {
+            foreach ($datamap['tt_content'] as $id => &$data) {
+                if (
+                    isset($data['pid']) &&
+                    (int)$data['pid'] < 0 &&
+                    (!isset($data['tx_container_parent']) || (int)$data['tx_container_parent'] === 0)
+                ) {
+                    $record = $this->database->fetchOneRecord(-(int)$data['pid']);
+                    if ($record['tx_container_parent'] > 0) {
+                        // new elements in container have already correct target
+                        continue;
+                    }
+                    if (!$this->tcaRegistry->isContainerElement($record['CType'])) {
+                        continue;
+                    }
+                    try {
+                        $container = $this->containerFactory->buildContainer($record['uid']);
+                        $data['pid'] = $this->containerService->getAfterContainerElementTarget($container);
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+        return $datamap;
     }
 
     /**

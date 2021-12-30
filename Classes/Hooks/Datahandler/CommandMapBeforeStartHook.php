@@ -73,6 +73,52 @@ class CommandMapBeforeStartHook
         // previously page id is used for copy/moving element at top of a container colum
         // but this leeds to wrong sorting in page context (e.g. List-Module)
         $dataHandler->cmdmap = $this->rewriteCommandMapTargetForTopAtContainer($dataHandler->cmdmap);
+        $dataHandler->cmdmap = $this->rewriteCommandMapTargetForAfterContainer($dataHandler->cmdmap);
+    }
+
+    protected function rewriteCommandMapTargetForAfterContainer(array $cmdmap): array
+    {
+        if (!empty($cmdmap['tt_content'])) {
+            foreach ($cmdmap['tt_content'] as $id => &$cmd) {
+                foreach ($cmd as $operation => $value) {
+                    if (in_array($operation, ['copy', 'move'], true) === false) {
+                        continue;
+                    }
+                    if (
+                        (!isset($value['update']['tx_container_parent']) || (int)$value['update']['tx_container_parent'] === 0) &&
+                        ((is_array($value) && $value['target'] < 0) || (int)$value < 0)
+                    ) {
+                        if (is_array($value)) {
+                            $target = -(int)$value['target'];
+                        } else {
+                            // simple command
+                            $target = -(int)$value;
+                        }
+                        $record = $this->database->fetchOneRecord($target);
+                        if ($record['tx_container_parent'] > 0) {
+                            // elements in container have already correct target
+                            continue;
+                        }
+                        if (!$this->tcaRegistry->isContainerElement($record['CType'])) {
+                            continue;
+                        }
+                        try {
+                            $container = $this->containerFactory->buildContainer($record['uid']);
+                            $target = $this->containerService->getAfterContainerElementTarget($container);
+                            if (is_array($value)) {
+                                $cmd[$operation]['target'] = $target;
+                            } else {
+                                // simple command
+                                $cmd[$operation] = $target;
+                            }
+                        } catch (Exception $e) {
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        return $cmdmap;
     }
 
     protected function rewriteCommandMapTargetForTopAtContainer(array $cmdmap): array

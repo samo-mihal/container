@@ -12,6 +12,7 @@ namespace B13\Container\Domain\Service;
  * of the License, or any later version.
  */
 
+use B13\Container\Domain\Factory\ContainerFactory;
 use B13\Container\Domain\Model\Container;
 use B13\Container\Tca\Registry;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -24,15 +25,20 @@ class ContainerService implements SingletonInterface
      */
     protected $tcaRegistry;
 
-    public function __construct(Registry $tcaRegistry = null)
+    /**
+     * @var ContainerFactory
+     */
+    protected $containerFactory;
+
+    public function __construct(Registry $tcaRegistry = null, ContainerFactory $containerFactory = null)
     {
         $this->tcaRegistry = $tcaRegistry ?? GeneralUtility::makeInstance(Registry::class);
+        $this->containerFactory = $containerFactory ?? GeneralUtility::makeInstance(ContainerFactory::class);
     }
 
     public function getNewContentElementAtTopTargetInColumn(Container $container, int $targetColPos): int
     {
-        $containerRecord = $container->getContainerRecord();
-        $target = -$containerRecord['uid'];
+        $target = -$container->getUid();
         $previousRecord = null;
         $allColumns = $this->tcaRegistry->getAllAvailableColumnsColPos($container->getCType());
         foreach ($allColumns as $colPos) {
@@ -46,5 +52,25 @@ class ContainerService implements SingletonInterface
             }
         }
         return $target;
+    }
+
+    public function getAfterContainerElementTarget(Container $container): int
+    {
+        $target = -$container->getUid();
+        $containerRecord = $container->getContainerRecord();
+        $childRecords = $container->getChildRecords();
+        if (empty($childRecords)) {
+            return $target;
+        }
+        $lastChild = array_pop($childRecords);
+        if ($lastChild['sorting'] < $containerRecord['sorting']) {
+            // sorting is not migrated to be consistent
+            return $target;
+        }
+        if (!$this->tcaRegistry->isContainerElement($lastChild['CType'])) {
+            return -$lastChild['uid'];
+        }
+        $container = $this->containerFactory->buildContainer($lastChild['uid']);
+        return $this->getAfterContainerElementTarget($container);
     }
 }
