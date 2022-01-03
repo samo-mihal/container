@@ -72,7 +72,6 @@ class DatamapBeforeStartHook
 
     protected function afterContainerElementSorting(array $datamap): array
     {
-        //var_dump($datamap);
         if (isset($datamap['tt_content']) && !empty($datamap['tt_content'])) {
             foreach ($datamap['tt_content'] as $id => &$data) {
                 if (
