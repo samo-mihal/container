@@ -84,6 +84,14 @@ class DatamapBeforeStartHook
                         // new elements in container have already correct target
                         continue;
                     }
+                    if (isset($data['sys_language_uid']) && $data['sys_language_uid'] !== 0 && (int)$data['l10n_source'] > 0) {
+                        // localize process
+                        continue;
+                    }
+                    if (isset($data['sys_language_uid']) && $data['sys_language_uid'] !== 0 && $record['sys_language_uid'] === 0) {
+                        // localize process
+                        continue;
+                    }
                     if (!$this->tcaRegistry->isContainerElement($record['CType'])) {
                         continue;
                     }
