@@ -35,18 +35,6 @@ class LocalizeSortingTest extends DatahandlerTest
         return [
             ['cmdmap' => [
                 'tt_content' => [
-                    4 => ['localize' => 1],
-                    1 => ['localize' => 1]
-                ]
-            ]],
-            ['cmdmap' => [
-                'tt_content' => [
-                    1 => ['localize' => 1],
-                    4 => ['localize' => 1]
-                ]
-            ]],
-            ['cmdmap' => [
-                'tt_content' => [
                     4 => ['copyToLanguage' => 1],
                     1 => ['copyToLanguage' => 1]
                 ]

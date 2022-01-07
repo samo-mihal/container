@@ -65,46 +65,8 @@ class DatamapBeforeStartHook
     {
         // ajax move (drag & drop)
         $dataHandler->datamap = $this->extractContainerIdFromColPosInDatamap($dataHandler->datamap);
-        $dataHandler->datamap = $this->afterContainerElementSorting($dataHandler->datamap);
         $dataHandler->datamap = $this->datamapForChildLocalizations($dataHandler->datamap);
         $dataHandler->datamap = $this->datamapForChildrenChangeContainerLanguage($dataHandler->datamap);
-    }
-
-    protected function afterContainerElementSorting(array $datamap): array
-    {
-        if (isset($datamap['tt_content']) && !empty($datamap['tt_content'])) {
-            foreach ($datamap['tt_content'] as $id => &$data) {
-                if (
-                    isset($data['pid']) &&
-                    (int)$data['pid'] < 0 &&
-                    (!isset($data['tx_container_parent']) || (int)$data['tx_container_parent'] === 0)
-                ) {
-                    $record = $this->database->fetchOneRecord(-(int)$data['pid']);
-                    if ($record['tx_container_parent'] > 0) {
-                        // new elements in container have already correct target
-                        continue;
-                    }
-                    if (isset($data['sys_language_uid']) && $data['sys_language_uid'] !== 0 && (int)$data['l10n_source'] > 0) {
-                        // localize process
-                        continue;
-                    }
-                    if (isset($data['sys_language_uid']) && $data['sys_language_uid'] !== 0 && $record['sys_language_uid'] === 0) {
-                        // localize process
-                        continue;
-                    }
-                    if (!$this->tcaRegistry->isContainerElement($record['CType'])) {
-                        continue;
-                    }
-                    try {
-                        $container = $this->containerFactory->buildContainer($record['uid']);
-                        $data['pid'] = $this->containerService->getAfterContainerElementTarget($container);
-                    } catch (Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        return $datamap;
     }
 
     /**
