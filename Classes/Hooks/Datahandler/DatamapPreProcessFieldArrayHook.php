@@ -79,7 +79,7 @@ class DatamapPreProcessFieldArrayHook
         return $incomingFieldArray;
     }
 
-    protected function newLocalizedElementInContainer(array $incomingFieldArray): array
+    protected function copyToLanguageElementInContainer(array $incomingFieldArray): array
     {
         if (!isset($incomingFieldArray['tx_container_parent']) || (int)$incomingFieldArray['tx_container_parent'] === 0) {
             return $incomingFieldArray;
@@ -93,11 +93,15 @@ class DatamapPreProcessFieldArrayHook
         if (!isset($incomingFieldArray['sys_language_uid']) || (int)$incomingFieldArray['sys_language_uid'] === 0) {
             return $incomingFieldArray;
         }
+        $record = $this->database->fetchOneRecord(-$incomingFieldArray['pid']);
         $translatedContainerRecord = $this->database->fetchOneTranslatedRecord((int)$incomingFieldArray['tx_container_parent'], (int)$incomingFieldArray['sys_language_uid']);
         try {
+            $incomingFieldArray['tx_container_parent'] = $translatedContainerRecord['uid'];
             $container = $this->containerFactory->buildContainer($translatedContainerRecord['uid']);
-            $target = $this->containerService->getNewContentElementAtTopTargetInColumn($container, (int)$incomingFieldArray['colPos']);
-            $incomingFieldArray['pid'] = $target;
+            if ((int)$record['sys_language_uid'] === 0 || empty($container->getChildrenByColPos((int)$incomingFieldArray['colPos']))) {
+                $target = $this->containerService->getNewContentElementAtTopTargetInColumn($container, (int)$incomingFieldArray['colPos']);
+                $incomingFieldArray['pid'] = $target;
+            }
         } catch (Exception $e) {
             // not a container
         }
@@ -116,6 +120,6 @@ class DatamapPreProcessFieldArrayHook
             return;
         }
         $incomingFieldArray = $this->newElementAfterContainer($incomingFieldArray);
-        $incomingFieldArray = $this->newLocalizedElementInContainer($incomingFieldArray);
+        $incomingFieldArray = $this->copyToLanguageElementInContainer($incomingFieldArray);
     }
 }

@@ -13,7 +13,7 @@ namespace B13\Container\Tests\Functional\Datahandler\Localization;
 
 use B13\Container\Tests\Functional\Datahandler\DatahandlerTest;
 
-class LocalizeSortingTest extends DatahandlerTest
+class CopyToLanguageSortingTest extends DatahandlerTest
 {
 
     /**
@@ -54,7 +54,7 @@ class LocalizeSortingTest extends DatahandlerTest
      */
     public function localizeKeepsSorting(array $cmdmap): void
     {
-        $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Fixtures/localize_keeps_sorting.xml');
+        $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Fixtures/CopyToLanguageSorting/localize_containers.xml');
         $this->dataHandler->start([], $cmdmap, $this->backendUser);
         $this->dataHandler->process_cmdmap();
         $translatedContainer1 = $this->fetchOneRecord('t3_origuid', 1);
@@ -66,5 +66,49 @@ class LocalizeSortingTest extends DatahandlerTest
         self::assertTrue($translatedChild11['sorting'] < $translatedChild12['sorting'], 'child-1-2 is sorted before child-1-1');
         self::assertTrue($translatedChild12['sorting'] < $translatedContainer2['sorting'], 'container-2 is sorted before child-1-2');
         self::assertTrue($translatedContainer2['sorting'] < $translatedChild21['sorting'], 'child-2-1 is sorted before container-2');
+    }
+
+    /**
+     * @test
+     */
+    public function localizeChildAtTopOfContainer(): void
+    {
+        $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Fixtures/CopyToLanguageSorting/localize_child_at_top.xml');
+        $cmdmap = [
+            'tt_content' => [
+                2 => [
+                    'copyToLanguage' => 1
+                ]
+            ]
+        ];
+        $this->dataHandler->start([], $cmdmap, $this->backendUser);
+        $this->dataHandler->process_cmdmap();
+        $translatedContainer1 = $this->fetchOneRecord('uid', 4);
+        $translatedChild11 = $this->fetchOneRecord('t3_origuid', 2);
+        $translatedChild12 = $this->fetchOneRecord('uid', 5);
+        self::assertTrue($translatedContainer1['sorting'] < $translatedChild11['sorting'], 'child-1-1 is sorted before container-1');
+        self::assertTrue($translatedChild11['sorting'] < $translatedChild12['sorting'], 'child-1-1 is sorted after child-1-2');
+    }
+
+    /**
+     * @test
+     */
+    public function localizeChildAfterContainerChild(): void
+    {
+        $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Fixtures/CopyToLanguageSorting/localize_child_after_child.xml');
+        $cmdmap = [
+            'tt_content' => [
+                3 => [
+                    'copyToLanguage' => 1
+                ]
+            ]
+        ];
+        $this->dataHandler->start([], $cmdmap, $this->backendUser);
+        $this->dataHandler->process_cmdmap();
+        $translatedContainer1 = $this->fetchOneRecord('uid', 4);
+        $translatedChild11 = $this->fetchOneRecord('uid', 5);
+        $translatedChild12 = $this->fetchOneRecord('t3_origuid', 3);
+        self::assertTrue($translatedContainer1['sorting'] < $translatedChild11['sorting'], 'child-1-1 is sorted before container-1');
+        self::assertTrue($translatedChild11['sorting'] < $translatedChild12['sorting'], 'child-1-1 is sorted after child-1-2');
     }
 }

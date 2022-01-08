@@ -69,8 +69,7 @@ call_user_func(static function () {
     $commandMapHooks = [
         'tx_container-post-process' => \B13\Container\Hooks\Datahandler\CommandMapPostProcessingHook::class,
         'tx_container-before-start' => \B13\Container\Hooks\Datahandler\CommandMapBeforeStartHook::class,
-        'tx_container-delete' => \B13\Container\Hooks\Datahandler\DeleteHook::class,
-        'tx_container-after-finish' => \B13\Container\Hooks\Datahandler\CommandMapAfterFinishHook::class
+        'tx_container-delete' => \B13\Container\Hooks\Datahandler\DeleteHook::class
     ];
 
     $datamapHooks = [
