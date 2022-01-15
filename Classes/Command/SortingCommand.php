@@ -47,6 +47,7 @@ class SortingCommand extends Command
     {
         $dryrun = (bool)$input->getArgument('dryrun');
         Bootstrap::initializeBackendAuthentication();
+        Bootstrap::initializeLanguageObject();
         $errors = $this->sorting->run($dryrun);
         foreach ($errors as $error) {
             $output->writeln($error);

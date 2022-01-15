@@ -82,7 +82,7 @@ class ContainerLayoutView extends PageLayoutView
         $this->containerFactory = $containerFactory ?? GeneralUtility::makeInstance(ContainerFactory::class);
         $this->registry = $registry ?? GeneralUtility::makeInstance(Registry::class);
         $this->containerColumnConfigurationService = $containerColumnConfigurationService ?? GeneralUtility::makeInstance(ContainerColumnConfigurationService::class);
-        $this->containerService = $containerService;
+        $this->containerService = $containerService ?? GeneralUtility::makeInstance(ContainerService::class);
 
         $typo3Version = GeneralUtility::makeInstance(Typo3Version::class);
         if ($typo3Version->getMajorVersion() === 10) {

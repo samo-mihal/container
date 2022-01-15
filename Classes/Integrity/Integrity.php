@@ -77,12 +77,16 @@ class Integrity implements SingletonInterface
         $containerChildRecords = $this->database->getTranslatedContainerChildRecords();
         $containerRecords = $this->database->getTranslatedContainerRecords($cTypes);
         foreach ($containerChildRecords as $containerChildRecord) {
-            $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];
-            if (
-                ($containerRecord['l18n_parent'] === 0 && $containerChildRecord['l18n_parent'] !== 0) ||
-                ($containerRecord['l18n_parent'] !== 0 && $containerChildRecord['l18n_parent'] === 0)
-            ) {
-                $this->res['errors'][] = new WrongL18nParentError($containerChildRecord, $containerRecord);
+            if (!isset($containerRecords[$containerChildRecord['tx_container_parent']])) {
+                $this->res['errors'][] = new NonExistingParentError($containerChildRecord);
+            } else {
+                $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];
+                if (
+                    ($containerRecord['l18n_parent'] === 0 && $containerChildRecord['l18n_parent'] !== 0) ||
+                    ($containerRecord['l18n_parent'] !== 0 && $containerChildRecord['l18n_parent'] === 0)
+                ) {
+                    $this->res['errors'][] = new WrongL18nParentError($containerChildRecord, $containerRecord);
+                }
             }
         }
     }
@@ -96,7 +100,7 @@ class Integrity implements SingletonInterface
         $containerRecords = $this->database->getContainerRecords($cTypes);
         $containerChildRecords = $this->database->getContainerChildRecords();
         foreach ($containerChildRecords as $containerChildRecord) {
-            if (empty($containerRecords[$containerChildRecord['tx_container_parent']])) {
+            if (!isset($containerRecords[$containerChildRecord['tx_container_parent']])) {
                 $this->res['errors'][] = new NonExistingParentError($containerChildRecord);
             } else {
                 $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];
