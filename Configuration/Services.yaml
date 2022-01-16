@@ -18,6 +18,12 @@ services:
       - name: event.listener
         identifier: 'tx-container-boot-completed'
         event: TYPO3\CMS\Core\Core\Event\BootCompletedEvent
+  B13\Container\Command\DeleteChildrenWithWrongPidCommand:
+    tags:
+      - name: 'console.command'
+        command: 'container:deleteChildrenWithWrongPid'
+        schedulable: false
+        description: delete all child records with pid neq containers pid
   B13\Container\Command\IntegrityCommand:
     tags:
       - name: 'console.command'

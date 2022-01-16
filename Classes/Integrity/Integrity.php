@@ -64,25 +64,44 @@ class Integrity implements SingletonInterface
             }
         }
         $this->defaultLanguageRecords($cTypes, $colPosByCType);
-        $this->localizedRecords($cTypes, $colPosByCType);
+        $this->nonDefaultLanguageRecords($cTypes, $colPosByCType);
         return $this->res;
     }
 
-    /**
-     * @param array $cTypes
-     * @param array $colPosByCType
-     */
-    private function localizedRecords(array $cTypes, array $colPosByCType): void
+    private function nonDefaultLanguageRecords(array $cTypes, array $colPosByCType): void
     {
-        $containerChildRecords = $this->database->getTranslatedContainerChildRecords();
-        $containerRecords = $this->database->getTranslatedContainerRecords($cTypes);
-        foreach ($containerChildRecords as $containerChildRecord) {
-            $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];
-            if (
-                ($containerRecord['l18n_parent'] === 0 && $containerChildRecord['l18n_parent'] !== 0) ||
-                ($containerRecord['l18n_parent'] !== 0 && $containerChildRecord['l18n_parent'] === 0)
-            ) {
-                $this->res['errors'][] = new WrongL18nParentError($containerChildRecord, $containerRecord);
+        // sys_langauge_uid > 0
+        $nonDefaultLanguageChildRecords = $this->database->getNonDefaultLanguageContainerChildRecords();
+        $nonDefaultLangaugeContainerRecords = $this->database->getNonDefaultLanguageContainerRecords($cTypes);
+        $defaultLanguageContainerRecords = $this->database->getContainerRecords($cTypes);
+        foreach ($nonDefaultLanguageChildRecords as $nonDefaultLanguageChildRecord) {
+            if ($nonDefaultLanguageChildRecord['l18n_parent'] > 0) {
+                // connected mode
+                // tx_container_parent should be default container record uid
+                if (!isset($defaultLanguageContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
+                    $this->res['errors'][] = new NonExistingParentError($nonDefaultLanguageChildRecord);
+                } elseif (isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
+                    $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']]);
+                }
+            } else {
+                // free mode, can be created direct, or by copyToLanguage
+                // tx_container_parent should be nonDefaultLanguage container record uid
+                if (!isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
+                    $this->res['errors'][] = new NonExistingParentError($nonDefaultLanguageChildRecord);
+                } elseif (isset($defaultLanguageContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
+                    $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $defaultLanguageContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']]);
+                } else {
+                    $containerRecord = $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']];
+                    if ($containerRecord['pid'] !== $nonDefaultLanguageChildRecord['pid']) {
+                        $this->res['errors'][] = new WrongPidError($nonDefaultLanguageChildRecord, $containerRecord);
+                    }
+                    if ($containerRecord['sys_language_uid'] !== $nonDefaultLanguageChildRecord['sys_language_uid']) {
+                        $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $containerRecord);
+                    }
+                    if (!in_array($nonDefaultLanguageChildRecord['colPos'], $colPosByCType[$containerRecord['CType']])) {
+                        $this->res['warnings'][] = new UnusedColPosWarning($nonDefaultLanguageChildRecord, $containerRecord);
+                    }
+                }
             }
         }
     }
@@ -96,7 +115,7 @@ class Integrity implements SingletonInterface
         $containerRecords = $this->database->getContainerRecords($cTypes);
         $containerChildRecords = $this->database->getContainerChildRecords();
         foreach ($containerChildRecords as $containerChildRecord) {
-            if (empty($containerRecords[$containerChildRecord['tx_container_parent']])) {
+            if (!isset($containerRecords[$containerChildRecord['tx_container_parent']])) {
                 $this->res['errors'][] = new NonExistingParentError($containerChildRecord);
             } else {
                 $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];

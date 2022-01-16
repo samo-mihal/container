@@ -33,11 +33,7 @@ class Database implements SingletonInterface
         return $queryBuilder;
     }
 
-    /**
-     * @param array $cTypes
-     * @return array
-     */
-    public function getTranslatedContainerRecords(array $cTypes): array
+    public function getNonDefaultLanguageContainerRecords(array $cTypes): array
     {
         $queryBuilder = $this->getQueryBuilder();
         $stm = $queryBuilder
@@ -48,8 +44,8 @@ class Database implements SingletonInterface
                     'CType',
                     $queryBuilder->createNamedParameter($cTypes, Connection::PARAM_STR_ARRAY)
                 ),
-                $queryBuilder->expr()->neq(
-                    'l10n_source',
+                $queryBuilder->expr()->gt(
+                    'sys_language_uid',
                     $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
                 )
             )
@@ -61,10 +57,7 @@ class Database implements SingletonInterface
         return $rows;
     }
 
-    /**
-     * @return array
-     */
-    public function getTranslatedContainerChildRecords(): array
+    public function getNonDefaultLanguageContainerChildRecords(): array
     {
         $queryBuilder = $this->getQueryBuilder();
         $stm = $queryBuilder
@@ -75,8 +68,8 @@ class Database implements SingletonInterface
                     'tx_container_parent',
                     $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
                 ),
-                $queryBuilder->expr()->neq(
-                    'l10n_source',
+                $queryBuilder->expr()->gt(
+                    'sys_language_uid',
                     $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
                 )
             )
