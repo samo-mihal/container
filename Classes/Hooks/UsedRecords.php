@@ -12,11 +12,12 @@ namespace B13\Container\Hooks;
  * of the License, or any later version.
  */
 
-use B13\Container\Domain\Factory\ContainerFactory;
+use B13\Container\Domain\Factory\PageView\Backend\ContainerFactory;
 use B13\Container\Domain\Factory\Exception;
 use B13\Container\Tca\Registry;
 use TYPO3\CMS\Backend\View\PageLayoutView;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 
 class UsedRecords
 {
@@ -50,14 +51,12 @@ class UsedRecords
     public function addContainerChildren(array $params, PageLayoutView $pageLayoutView): bool
     {
         $record = $params['record'];
+
         if ($record['tx_container_parent'] > 0) {
             try {
                 $container = $this->containerFactory->buildContainer((int)$record['tx_container_parent']);
-                $columns = $this->tcaRegistry->getAvailableColumns($container->getCType());
-                foreach ($columns as $column) {
-                    if ($column['colPos'] === (int)$record['colPos']) {
-                        return true;
-                    }
+                if ($container->hasChildInColPos($record['colPos'], $record['uid'])) {
+                    return true;
                 }
                 return false;
             } catch (Exception $e) {
