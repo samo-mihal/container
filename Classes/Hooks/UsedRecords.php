@@ -55,8 +55,11 @@ class UsedRecords
         if ($record['tx_container_parent'] > 0) {
             try {
                 $container = $this->containerFactory->buildContainer((int)$record['tx_container_parent']);
-                if ($container->hasChildInColPos($record['colPos'], $record['uid'])) {
-                    return true;
+                $columns = $this->tcaRegistry->getAvailableColumns($container->getCType());
+                foreach ($columns as $column) {
+                    if ($column['colPos'] === (int)$record['colPos']) {
+                        return $container->hasChildInColPos($record['colPos'], $record['uid']);
+                    }
                 }
                 return false;
             } catch (Exception $e) {
