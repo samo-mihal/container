@@ -42,7 +42,7 @@ class IntegrityCommand extends Command
             }
         }
         if (count($res['warnings']) > 0) {
-            $output->writeln('WARNINGS');
+            $output->writeln('WARNINGS ("unused elements")');
             foreach ($res['warnings'] as $error) {
                 $output->writeln($error->getErrorMessage());
             }

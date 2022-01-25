@@ -12,7 +12,7 @@ namespace B13\Container\Integrity;
  * of the License, or any later version.
  */
 
-use B13\Container\Integrity\Error\NonExistingParentError;
+use B13\Container\Integrity\Error\NonExistingParentWarning;
 use B13\Container\Integrity\Error\UnusedColPosWarning;
 use B13\Container\Integrity\Error\WrongL18nParentError;
 use B13\Container\Integrity\Error\WrongPidError;

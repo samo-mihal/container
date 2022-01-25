@@ -70,9 +70,19 @@ class UsedRecordsTest extends FunctionalTestCase
     /**
      * @test
      */
-    public function addContainerChildrenReturnsFalsIfRecordNotInContainer(): void
+    public function addContainerChildrenReturnsFalseIfRecordNotInContainer(): void
     {
         $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Hooks/Fixtures/UsedRecords/children_not_in_container.xml');
+        $pageLayout = new PageLayoutView();
+        $usedRecords = GeneralUtility::makeInstance(UsedRecords::class);
+        $record = $this->fetchOneRecordByUid(2);
+        $res = $usedRecords->addContainerChildren(['record' => $record, 'used' => false], $pageLayout);
+        self::assertFalse($res);
+    }
+
+    public function addContainerChildrenReturnsTrueForLocalizedContent(): void
+    {
+        $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Hooks/Fixtures/UsedRecords/localized_content.xml');
         $pageLayout = new PageLayoutView();
         $usedRecords = GeneralUtility::makeInstance(UsedRecords::class);
         $record = $this->fetchOneRecordByUid(2);

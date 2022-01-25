@@ -12,9 +12,10 @@ namespace B13\Container\Integrity;
  * of the License, or any later version.
  */
 
-use B13\Container\Integrity\Error\NonExistingParentError;
+use B13\Container\Integrity\Error\NonExistingParentWarning;
 use B13\Container\Integrity\Error\UnusedColPosWarning;
 use B13\Container\Integrity\Error\WrongL18nParentError;
+use B13\Container\Integrity\Error\WrongLanguageWarning;
 use B13\Container\Integrity\Error\WrongPidError;
 use B13\Container\Tca\Registry;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -42,7 +43,6 @@ class Integrity implements SingletonInterface
     ];
 
     /**
-     * ContainerFactory constructor.
      * @param Database|null $database
      * @param Registry|null $tcaRegistry
      */
@@ -75,7 +75,6 @@ class Integrity implements SingletonInterface
 
     private function nonDefaultLanguageRecords(array $cTypes, array $colPosByCType): void
     {
-        // sys_langauge_uid > 0
         $nonDefaultLanguageChildRecords = $this->database->getNonDefaultLanguageContainerChildRecords();
         $nonDefaultLangaugeContainerRecords = $this->database->getNonDefaultLanguageContainerRecords($cTypes);
         $defaultLanguageContainerRecords = $this->database->getContainerRecords($cTypes);
@@ -84,8 +83,7 @@ class Integrity implements SingletonInterface
                 // connected mode
                 // tx_container_parent should be default container record uid
                 if (!isset($defaultLanguageContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
-                    // warning
-                    $this->res['errors'][] = new NonExistingParentError($nonDefaultLanguageChildRecord);
+                    $this->res['warning'][] = new NonExistingParentWarning($nonDefaultLanguageChildRecord);
                 } elseif (isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
                     $containerRecord = $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']];
                     $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $containerRecord);
@@ -98,10 +96,9 @@ class Integrity implements SingletonInterface
                     if ($containerRecord['pid'] !== $nonDefaultLanguageChildRecord['pid']) {
                         $this->res['errors'][] = new WrongPidError($nonDefaultLanguageChildRecord, $containerRecord);
                     }
-                    $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $containerRecord);
+                    $this->res['warnings'][] = new WrongLanguageWarning($nonDefaultLanguageChildRecord, $containerRecord);
                 } elseif (!isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
-                    // warning
-                    $this->res['errors'][] = new NonExistingParentError($nonDefaultLanguageChildRecord);
+                    $this->res['warnings'][] = new NonExistingParentWarning($nonDefaultLanguageChildRecord);
                 } else {
                     $containerRecord = $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']];
                     if ($containerRecord['pid'] !== $nonDefaultLanguageChildRecord['pid']) {
@@ -128,9 +125,8 @@ class Integrity implements SingletonInterface
         $containerChildRecords = $this->database->getContainerChildRecords();
         foreach ($containerChildRecords as $containerChildRecord) {
             if (!isset($containerRecords[$containerChildRecord['tx_container_parent']])) {
-                // warning
                 // can happen when container CType is changed
-                $this->res['errors'][] = new NonExistingParentError($containerChildRecord);
+                $this->res['warnings'][] = new NonExistingParentWarning($containerChildRecord);
             } else {
                 $containerRecord = $containerRecords[$containerChildRecord['tx_container_parent']];
                 if ($containerRecord['pid'] !== $containerChildRecord['pid']) {

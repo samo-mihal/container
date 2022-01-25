@@ -58,7 +58,11 @@ class UsedRecords
                 $columns = $this->tcaRegistry->getAvailableColumns($container->getCType());
                 foreach ($columns as $column) {
                     if ($column['colPos'] === (int)$record['colPos']) {
-                        return $container->hasChildInColPos($record['colPos'], $record['uid']);
+                        if ($record['sys_language_uid'] > 0 && $container->isConnectedMode()) {
+                            return $container->hasChildInColPos($record['colPos'], $record['l18n_parent']);
+                        } else {
+                            return $container->hasChildInColPos($record['colPos'], $record['uid']);
+                        }
                     }
                 }
                 return false;
