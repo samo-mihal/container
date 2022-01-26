@@ -80,14 +80,17 @@ class UsedRecordsTest extends FunctionalTestCase
         self::assertFalse($res);
     }
 
+    /**
+     * @test
+     */
     public function addContainerChildrenReturnsTrueForLocalizedContent(): void
     {
         $this->importDataSet(ORIGINAL_ROOT . 'typo3conf/ext/container/Tests/Functional/Hooks/Fixtures/UsedRecords/localized_content.xml');
         $pageLayout = new PageLayoutView();
         $usedRecords = GeneralUtility::makeInstance(UsedRecords::class);
-        $record = $this->fetchOneRecordByUid(2);
+        $record = $this->fetchOneRecordByUid(4);
         $res = $usedRecords->addContainerChildren(['record' => $record, 'used' => false], $pageLayout);
-        self::assertFalse($res);
+        self::assertTrue($res);
     }
 
     /**
