@@ -12,16 +12,16 @@ namespace B13\Container\Command;
  * of the License, or any later version.
  */
 
-use B13\Container\Integrity\Error\WrongPidError;
+use B13\Container\Integrity\Error\ChildInTranslatedContainerError;
+use B13\Container\Integrity\Error\WrongL18nParentError;
 use B13\Container\Integrity\Integrity;
 use B13\Container\Integrity\IntegrityFix;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class DeleteChildrenWithWrongPidCommand extends Command
+class FixLanguageModeCommand extends Command
 {
 
     /**
@@ -30,16 +30,16 @@ class DeleteChildrenWithWrongPidCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        Bootstrap::initializeBackendAuthentication();
-        Bootstrap::initializeLanguageObject();
         $integrity = GeneralUtility::makeInstance(Integrity::class);
         $integrityFix = GeneralUtility::makeInstance(IntegrityFix::class);
         $res = $integrity->run();
+        $errors = [];
         foreach ($res['errors'] as $error) {
-            if ($error instanceof WrongPidError) {
-                $integrityFix->deleteChildrenWithWrongPid($error);
+            if ($error instanceof WrongL18nParentError) {
+                $errors[] = $error;
             }
         }
+        $integrityFix->languageMode($errors);
         return 0;
     }
 }

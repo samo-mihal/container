@@ -21,12 +21,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class Database implements SingletonInterface
 {
-    private $fields = ['uid', 'pid', 'sys_language_uid', 'CType', 'l18n_parent', 't3_origuid', 'colPos', 'tx_container_parent'];
+    private $fields = ['uid', 'pid', 'sys_language_uid', 'CType', 'l18n_parent', 't3_origuid', 'colPos', 'tx_container_parent', 'l10n_source'];
 
     /**
      * @return QueryBuilder
      */
-    protected function getQueryBuilder(): QueryBuilder
+    public function getQueryBuilder(): QueryBuilder
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tt_content');
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
@@ -79,6 +79,31 @@ class Database implements SingletonInterface
             $rows[$result['uid']] = $result;
         }
         return $rows;
+    }
+
+    public function getChildrenByContainerAndColPos(int $containerId, int $colPos, int $languageId): array
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        return (array)$queryBuilder
+            ->select(...$this->fields)
+            ->from('tt_content')
+            ->where(
+                $queryBuilder->expr()->eq(
+                    'tx_container_parent',
+                    $queryBuilder->createNamedParameter($containerId, Connection::PARAM_INT)
+                ),
+                $queryBuilder->expr()->eq(
+                    'sys_language_uid',
+                    $queryBuilder->createNamedParameter($languageId, Connection::PARAM_INT)
+                ),
+                $queryBuilder->expr()->eq(
+                    'colPos',
+                    $queryBuilder->createNamedParameter($colPos, Connection::PARAM_INT)
+                )
+            )
+            ->orderBy('sorting')
+            ->execute()
+            ->fetchAll();
     }
 
     /**

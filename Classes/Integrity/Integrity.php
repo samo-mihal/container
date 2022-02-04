@@ -12,6 +12,7 @@ namespace B13\Container\Integrity;
  * of the License, or any later version.
  */
 
+use B13\Container\Integrity\Error\ChildInTranslatedContainerError;
 use B13\Container\Integrity\Error\NonExistingParentWarning;
 use B13\Container\Integrity\Error\UnusedColPosWarning;
 use B13\Container\Integrity\Error\WrongL18nParentError;
@@ -68,11 +69,6 @@ class Integrity implements SingletonInterface
         return $this->res;
     }
 
-    /**
-     * select sys_language_uid,l18n_parent,l10n_source,uid,pid,CType,header,colPos,tx_container_parent,deleted,hidden from tt_content where uid=277204 or tx_container_parent=277204 or l10n_source=277204;
-     * select sys_language_uid,l18n_parent,l10n_source,uid,pid,CType,header,colPos,tx_container_parent,deleted,hidden from tt_content where uid=240468 or tx_container_parent=240468 or l10n_source=240468;
-     */
-
     private function nonDefaultLanguageRecords(array $cTypes, array $colPosByCType): void
     {
         $nonDefaultLanguageChildRecords = $this->database->getNonDefaultLanguageContainerChildRecords();
@@ -83,7 +79,16 @@ class Integrity implements SingletonInterface
                 // connected mode
                 // tx_container_parent should be default container record uid
                 if (!isset($defaultLanguageContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
-                    $this->res['warning'][] = new NonExistingParentWarning($nonDefaultLanguageChildRecord);
+                    if (isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
+                        $containerRecord = $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']];
+                        if ($containerRecord['sys_language_uid'] === $nonDefaultLanguageChildRecord['sys_language_uid'] && $containerRecord['l18n_parent'] > 0) {
+                            $this->res['errors'][] = new ChildInTranslatedContainerError($nonDefaultLanguageChildRecord, $containerRecord);
+                        } else {
+                            $this->res['warnings'][] = new NonExistingParentWarning($nonDefaultLanguageChildRecord);
+                        }
+                    } else {
+                        $this->res['warnings'][] = new NonExistingParentWarning($nonDefaultLanguageChildRecord);
+                    }
                 } elseif (isset($nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']])) {
                     $containerRecord = $nonDefaultLangaugeContainerRecords[$nonDefaultLanguageChildRecord['tx_container_parent']];
                     $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $containerRecord);
@@ -110,10 +115,15 @@ class Integrity implements SingletonInterface
                     if (!in_array($nonDefaultLanguageChildRecord['colPos'], $colPosByCType[$containerRecord['CType']])) {
                         $this->res['warnings'][] = new UnusedColPosWarning($nonDefaultLanguageChildRecord, $containerRecord);
                     }
+                    if ($containerRecord['l18n_parent'] > 0) {
+                        $this->res['errors'][] = new WrongL18nParentError($nonDefaultLanguageChildRecord, $containerRecord);
+                    }
                 }
             }
         }
     }
+
+    // translated children tx_container_parent should point to translated container
 
     /**
      * @param array $cTypes
