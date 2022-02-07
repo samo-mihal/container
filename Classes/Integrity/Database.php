@@ -21,7 +21,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class Database implements SingletonInterface
 {
-    private $fields = ['uid', 'pid', 'sys_language_uid', 'CType', 'l18n_parent', 't3_origuid', 'colPos', 'tx_container_parent', 'l10n_source'];
+    private $fields = ['uid', 'pid', 'sys_language_uid', 'CType', 'l18n_parent', 't3_origuid', 'colPos', 'tx_container_parent', 'l10n_source', 'hidden'];
 
     /**
      * @return QueryBuilder
