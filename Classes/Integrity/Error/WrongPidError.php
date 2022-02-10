@@ -44,7 +44,7 @@ class WrongPidError implements ErrorInterface
         $this->errorMessage = self::IDENTIFIER . ': container child with uid ' . $childRecord['uid'] .
             ' (page: ' . $childRecord['pid'] . ' language: ' . $childRecord['sys_language_uid'] . ')' .
             ' but tx_container_parent ' . $childRecord['tx_container_parent'] .
-            ' has pid ' . $containerRecord['pid'];
+            ' has pid ' . $containerRecord['pid'] . ' language: ' . $containerRecord['sys_language_uid'] . ')';
     }
 
     /**
