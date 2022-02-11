@@ -77,22 +77,15 @@ call_user_func(static function () {
         'tx_container-before-start' => \B13\Container\Hooks\Datahandler\DatamapBeforeStartHook::class
     ];
 
+
     // EXT:content_defender
     $packageManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Package\PackageManager::class);
+
     if ($packageManager->isPackageActive('content_defender')) {
-        if (version_compare($packageManager->getPackage('content_defender')->getPackageMetaData()->getVersion(), '3.1.0', '<')) {
-            trigger_error('update EXT:content_defender to 3.1', E_USER_DEPRECATED);
-            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['cms']['db_new_content_el']['wizardItemsHook']['tx_container-content-defender'] =
-                \B13\Container\ContentDefender\Legacy\Hooks\WizardItems::class;
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][ \B13\Container\ContentDefender\Legacy\Form\FormDataProvider\TcaCTypeItems::class] = [
-                'depends' => [
-                    \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectItems::class
-                ]
-            ];
-        } else {
+
             $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['content_defender']['ColumnConfigurationManipulationHook']['tx_container'] =
                 \B13\Container\ContentDefender\Hooks\ColumnConfigurationManipulationHook::class;
-        }
+
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\IchHabRecht\ContentDefender\Hooks\DatamapDataHandlerHook::class] = [
             'className' => \B13\Container\ContentDefender\Xclasses\DatamapHook::class
         ];
