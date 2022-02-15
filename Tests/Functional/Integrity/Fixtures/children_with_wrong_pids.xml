@@ -4,14 +4,18 @@
         <uid>1</uid>
         <pid>0</pid>
     </pages>
-    <!-- should be displayed unsed -->
-    <!-- should be deleted by container:deleteChildrenWithWrongPid -->
+    <pages>
+        <uid>2</uid>
+        <pid>0</pid>
+    </pages>
     <tt_content>
         <uid>1</uid>
         <pid>1</pid>
         <colPos>0</colPos>
         <CType>b13-2cols-with-header-container</CType>
     </tt_content>
+    <!-- should be displayed unsed -->
+    <!-- should be deleted by container:deleteChildrenWithWrongPid -->
     <tt_content>
         <uid>2</uid>
         <pid>2</pid>
