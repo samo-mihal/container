@@ -13,8 +13,6 @@ namespace B13\Container\Integrity;
  */
 
 use B13\Container\Integrity\Error\ChildInTranslatedContainerError;
-use B13\Container\Integrity\Error\NonExistingParentWarning;
-use B13\Container\Integrity\Error\UnusedColPosWarning;
 use B13\Container\Integrity\Error\WrongL18nParentError;
 use B13\Container\Integrity\Error\WrongPidError;
 use B13\Container\Tca\Registry;
@@ -75,7 +73,6 @@ class IntegrityFix implements SingletonInterface
 
     /**
      * @param WrongL18nParentError[] $errors
-     * @return void
      */
     public function languageMode(array $errors): void
     {
@@ -120,12 +117,10 @@ class IntegrityFix implements SingletonInterface
                         }
                         $stm->execute();
                     }
-                } else {
-                    // disconnect container
-                    #var_dump('disconnect ' . $containerRecord['uid'] . ' ' . $containerRecord['sys_language_uid']);
                 }
+                // disconnect container
+                    //var_dump('disconnect ' . $containerRecord['uid'] . ' ' . $containerRecord['sys_language_uid']);
             }
-
         }
     }
 }

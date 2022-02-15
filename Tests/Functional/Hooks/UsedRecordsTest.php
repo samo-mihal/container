@@ -114,5 +114,4 @@ class UsedRecordsTest extends FunctionalTestCase
         self::assertIsArray($row);
         return $row;
     }
-
 }

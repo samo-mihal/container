@@ -11,7 +11,6 @@ namespace B13\Container\Tests\Functional\Integrity;
  * of the License, or any later version.
  */
 
-
 use B13\Container\Integrity\Error\WrongPidError;
 use B13\Container\Integrity\Integrity;
 use B13\Container\Integrity\IntegrityFix;
@@ -117,5 +116,4 @@ class IntegrityTest extends FunctionalTestCase
             ->fetch();
         self::assertSame(1, $record['deleted']);
     }
-
 }

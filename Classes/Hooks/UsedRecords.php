@@ -12,12 +12,11 @@ namespace B13\Container\Hooks;
  * of the License, or any later version.
  */
 
-use B13\Container\Domain\Factory\PageView\Backend\ContainerFactory;
 use B13\Container\Domain\Factory\Exception;
+use B13\Container\Domain\Factory\PageView\Backend\ContainerFactory;
 use B13\Container\Tca\Registry;
 use TYPO3\CMS\Backend\View\PageLayoutView;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 
 class UsedRecords
 {
@@ -60,9 +59,8 @@ class UsedRecords
                     if ($column['colPos'] === (int)$record['colPos']) {
                         if ($record['sys_language_uid'] > 0 && $container->isConnectedMode()) {
                             return $container->hasChildInColPos($record['colPos'], $record['l18n_parent']);
-                        } else {
-                            return $container->hasChildInColPos($record['colPos'], $record['uid']);
                         }
+                        return $container->hasChildInColPos($record['colPos'], $record['uid']);
                     }
                 }
                 return false;

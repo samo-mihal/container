@@ -12,7 +12,6 @@ namespace B13\Container\Command;
  * of the License, or any later version.
  */
 
-use B13\Container\Integrity\Error\ChildInTranslatedContainerError;
 use B13\Container\Integrity\Error\WrongL18nParentError;
 use B13\Container\Integrity\Integrity;
 use B13\Container\Integrity\IntegrityFix;

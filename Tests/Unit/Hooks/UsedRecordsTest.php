@@ -100,5 +100,4 @@ class UsedRecordsTest extends UnitTestCase
         ];
         self::assertFalse($userRecords->addContainerChildren($params, $pageLayoutView->reveal()));
     }
-
 }
