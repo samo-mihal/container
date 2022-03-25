@@ -106,7 +106,8 @@ class CommandMapPostProcessingHook
                                 'target' => $target,
                                 'update' => [
                                     'tx_container_parent' => $containerId,
-                                    'colPos' => $record['colPos']
+                                    'colPos' => $record['colPos'],
+                                    'sys_language_uid' => $dataHandler->cmdmap['tt_content'][$origUid][$command]['update']['sys_language_uid']
                                 ]
                             ]
                         ]
