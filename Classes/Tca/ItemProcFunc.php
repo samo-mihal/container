@@ -60,8 +60,8 @@ class ItemProcFunc
                             // only one item is show, so it is not changeable
                             if ((int)$column['colPos'] === (int)$row['colPos']) {
                                 $items[] = [
-                                    $column['name'],
-                                    $column['colPos'],
+                                    'label' => $column['name'],
+                                    'value' => $column['colPos'],
                                 ];
                             }
                         }
@@ -85,19 +85,19 @@ class ItemProcFunc
                 $container = $this->containerFactory->buildContainer((int)$row['tx_container_parent']);
                 $cType = $container->getCType();
                 $items[] = [
-                    $cType,
-                    $row['tx_container_parent'],
+                    'label' => $cType,
+                    'value' => $row['tx_container_parent'],
                 ];
             } catch (Exception $e) {
                 $items[] = [
-                    '-',
-                    0,
+                    'label' => '-',
+                    'value' => 0,
                 ];
             }
         } else {
             $items[] = [
-                '-',
-                0,
+                'label' => '-',
+                'value' => 0,
             ];
         }
         $parameters['items'] = $items;

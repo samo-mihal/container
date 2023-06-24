@@ -33,10 +33,10 @@ class Registry implements SingletonInterface
             'tt_content',
             'CType',
             [
-                $containerConfiguration->getLabel(),
-                $containerConfiguration->getCType(),
-                $containerConfiguration->getCType(),
-                $containerConfiguration->getGroup(),
+                'label' => $containerConfiguration->getLabel(),
+                'value' => $containerConfiguration->getCType(),
+                'icon' => $containerConfiguration->getCType(),
+                'group' => $containerConfiguration->getGroup(),
             ]
         );
         if (
@@ -52,8 +52,8 @@ class Registry implements SingletonInterface
                     trigger_error('delimiter ' . (string)ContainerGridColumn::CONTAINER_COL_POS_DELIMITER_V12 . ' cannot be used as colPos (will throw Exception on next major releas)', E_USER_DEPRECATED);
                 }
                 $GLOBALS['TCA']['tt_content']['columns']['colPos']['config']['items'][] = [
-                    $column['name'],
-                    $column['colPos'],
+                    'label' => $column['name'],
+                    'value' => $column['colPos'],
                 ];
             }
         }
